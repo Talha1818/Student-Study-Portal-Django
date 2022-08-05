@@ -77,9 +77,9 @@ def homeworkDelete(request, pk=None):
 
 def homeworkUpdate(request, pk):
     homework = Homework.objects.get(id=pk)
-    print(homework.is_finished)
+    # print(homework.is_finished)
     if homework.is_finished:
-        print("YES")
+        # print("YES")
         homework.is_finished = False
     else:
         homework.is_finished = True
@@ -114,13 +114,64 @@ def youtube(request):
 
             result_list.append(result_dic)
             context = {
-                'form':form,
+                'form': form,
                 'result': result_list
             }
-        return render(request, 'dashboard/youtube.html',context)
+        return render(request, 'dashboard/youtube.html', context)
     else:
         form = DashboardForm()
     context = {
         'form': form
     }
     return render(request, 'dashboard/youtube.html', context)
+
+
+def todo(request):
+    if request.method == 'POST':
+        form = TodoForm(request.POST)
+        if form.is_valid():
+            try:
+                finished = request.POST['is_finished']
+                if finished == 'on':
+                    finished = True
+                else:
+                    finished = False
+            except:
+                finished = False
+            todo_ = Todo(user=request.user,
+                         title=request.POST['title'],
+                         is_finished=finished
+                         )
+            todo_.save()
+        messages.success(request, f'Todo added from {request.user.username} successfully')
+    else:
+        form = TodoForm()
+    todo = Todo.objects.filter(user=request.user)
+    if len(todo) == 0:
+        todo_done = True
+    else:
+        todo_done = False
+
+    context = {
+        'form': form,
+        'todo': todo,
+        'todo_done': todo_done
+    }
+    return render(request, 'dashboard/todo.html', context=context)
+
+
+def todoUpdate(request, pk):
+    todo = Todo.objects.get(id=pk)
+    # print(homework.is_finished)
+    if todo.is_finished:
+        # print("YES")
+        todo.is_finished = False
+    else:
+        todo.is_finished = True
+    todo.save()
+    return redirect('todo')
+
+
+def todoDelete(request, pk=None):
+    Todo.objects.filter(id=pk).delete()
+    return redirect('todo')
