@@ -18,5 +18,6 @@ urlpatterns = [
     path('todoDelete/<int:pk>', views.todoDelete, name='todoDelete'),
 
     path('books', views.books, name='books'),
+    path('dictionary', views.dictionary, name='dictionary'),
 
 ]
