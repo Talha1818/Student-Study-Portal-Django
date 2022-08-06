@@ -6,13 +6,16 @@ from django.contrib import messages
 from youtubesearchpython import VideosSearch
 import requests
 import wikipedia
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
+@login_required
 def home(request):
     return render(request, 'dashboard/home.html')
 
 
+@login_required
 def notes(request):
     if request.method == 'POST':
         form = NotesForm(request.POST)
@@ -28,6 +31,7 @@ def notes(request):
     return render(request, 'dashboard/notes.html', context=context)
 
 
+@login_required
 def deleteNote(request, pk=None):
     Notes.objects.filter(id=pk).delete()
     return redirect('notes')
@@ -37,6 +41,7 @@ class noteDetailsViews(DetailView):
     model = Notes
 
 
+@login_required
 def homework(request):
     if request.method == 'POST':
         form = HomeworkForm(request.POST)
@@ -72,11 +77,13 @@ def homework(request):
     return render(request, 'dashboard/homework.html', context)
 
 
+@login_required
 def homeworkDelete(request, pk=None):
     Homework.objects.filter(id=pk).delete()
     return redirect('homework')
 
 
+@login_required
 def homeworkUpdate(request, pk):
     homework = Homework.objects.get(id=pk)
     # print(homework.is_finished)
@@ -89,6 +96,7 @@ def homeworkUpdate(request, pk):
     return redirect('homework')
 
 
+@login_required
 def youtube(request):
     if request.method == 'POST':
         form = DashboardForm(request.POST)
@@ -128,6 +136,7 @@ def youtube(request):
     return render(request, 'dashboard/youtube.html', context)
 
 
+@login_required
 def todo(request):
     if request.method == 'POST':
         form = TodoForm(request.POST)
@@ -162,6 +171,7 @@ def todo(request):
     return render(request, 'dashboard/todo.html', context=context)
 
 
+@login_required
 def todoUpdate(request, pk):
     todo = Todo.objects.get(id=pk)
     # print(homework.is_finished)
@@ -174,11 +184,13 @@ def todoUpdate(request, pk):
     return redirect('todo')
 
 
+@login_required
 def todoDelete(request, pk=None):
     Todo.objects.filter(id=pk).delete()
     return redirect('todo')
 
 
+@login_required
 def books(request):
     if request.method == "POST":
         form = BooksForm(request.POST)
@@ -215,6 +227,7 @@ def books(request):
     return render(request, 'dashboard/books.html', context)
 
 
+@login_required
 def dictionary(request):
     if request.method == 'POST':
         form = DashboardForm(request.POST)
@@ -247,13 +260,14 @@ def dictionary(request):
     return render(request, 'dashboard/dictionary.html', context)
 
 
+@login_required
 def wiki(request):
     if request.method == 'POST':
         form = DashboardForm(request.POST)
         text = request.POST['text']
         wiki_ = wikipedia.page(text)
         context = {
-            'form':form,
+            'form': form,
             'title': wiki_.original_title,
             'link': wiki_.url,
             'details': wiki_.summary
@@ -262,6 +276,105 @@ def wiki(request):
     else:
         form = DashboardForm()
         context = {
-            'form': form
+            'form': form,
+            'input': False,
         }
     return render(request, 'dashboard/wiki.html', context)
+
+
+@login_required
+def conversion(request):
+    if request.method == 'POST':
+        form = ConversionForm(request.POST)
+        if request.POST['measurement'] == 'length':
+            meas_form = ConversionLengthForm()
+            context = {
+                'form': form,
+                'm_form': meas_form,
+                'input': True
+            }
+            if 'input' in request.POST:
+                first = request.POST['measure1']
+                second = request.POST['measure2']
+                input = request.POST['input']
+                answer = ''
+                if input and int(input) > 0:
+                    if first == 'yard' and second == 'foot':
+                        answer = f"{input} yard = {int(input) * 3} foot"
+                    if first == 'foot' and second == 'yard':
+                        answer = f"{input} foot = {int(input) / 3} yard"
+                context = {
+                    'form': form,
+                    'm_form': meas_form,
+                    'input': True,
+                    'answer': answer
+                }
+        if request.POST['measurement'] == 'mass':
+            meas_form = ConversionMassForm()
+            context = {
+                'form': form,
+                'm_form': meas_form,
+                'input': True
+            }
+            if 'input' in request.POST:
+                first = request.POST['measure1']
+                second = request.POST['measure2']
+                input = request.POST['input']
+                answer = ''
+                if input and int(input) > 0:
+                    if first == 'pound' and second == 'kilogram':
+                        answer = f"{input} pound = {int(input) * 0.45} kilogram"
+                    if first == 'kilogram' and second == 'pound':
+                        answer = f"{input} kilogram = {int(input) * 2.2} pound"
+                context = {
+                    'form': form,
+                    'm_form': meas_form,
+                    'input': True,
+                    'answer': answer
+                }
+
+    else:
+        form = ConversionForm()
+        context = {
+            'form': form
+        }
+    return render(request, 'dashboard/conversion.html', context)
+
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            messages.success(request, f"{username} created successfully!")
+            return redirect('login')
+    else:
+        form = UserRegistrationForm()
+    context = {
+        'form': form
+    }
+    return render(request, 'dashboard/register.html', context)
+
+
+@login_required
+def profile(request):
+    homework = Homework.objects.filter(is_finished=False, user=request.user)
+    todos = Todo.objects.filter(is_finished=False, user=request.user)
+    if len(homework) == 0:
+        homework_done = True
+    else:
+        homework_done = False
+    if len(todos) == 0:
+        todo_done = True
+    else:
+        todo_done = False
+
+    context = {
+        'homework': homework,
+        'todos': todos,
+        'homework_done': homework_done,
+        'todo_done': todo_done,
+    }
+
+    return render(request, 'dashboard/profile.html', context)
