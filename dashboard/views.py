@@ -5,6 +5,7 @@ from .forms import *
 from django.contrib import messages
 from youtubesearchpython import VideosSearch
 import requests
+import wikipedia
 
 
 # Create your views here.
@@ -244,3 +245,23 @@ def dictionary(request):
             'form': form
         }
     return render(request, 'dashboard/dictionary.html', context)
+
+
+def wiki(request):
+    if request.method == 'POST':
+        form = DashboardForm(request.POST)
+        text = request.POST['text']
+        wiki_ = wikipedia.page(text)
+        context = {
+            'form':form,
+            'title': wiki_.original_title,
+            'link': wiki_.url,
+            'details': wiki_.summary
+        }
+        return render(request, 'dashboard/wiki.html', context)
+    else:
+        form = DashboardForm()
+        context = {
+            'form': form
+        }
+    return render(request, 'dashboard/wiki.html', context)
