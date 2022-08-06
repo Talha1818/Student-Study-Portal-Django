@@ -1,0 +1,61 @@
+{% extends 'dashboard/base.html' %} 
+{% load static %}
+{%load crispy_forms_tags%}
+{% block content %}
+
+<section class='text-center container'>
+    <h2>Search books and browse your favorite</h2>
+    <p>just enter the search query to obtain the results</p><b></b>
+    <form action="" method="post">
+        {%csrf_token%}
+        {{form}}
+        <input class="btn btn-danger" type="submit" value="Submit">
+    </form><br>
+
+    {%for b in result%}
+    <a href="{{b.previewLink}}" target="_blank">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-3">
+                        <img class="img-fluid" src="{{b.thumbnail}}" alt="">
+
+                    </div>
+                    <div class="col-md-9">
+                        <h3 class="p-0 m-0">{{b.title}}</h3>
+                        <b>
+                            {%if b.subtitle%}
+                            <u>
+                                <h5 class="p-0 m-0">{{b.subtitle}}</h5>
+                            </u>
+                            {%endif%}
+                        </b>
+                        {%if b.description%}
+                        <h6 class="p-0 m-1">{{b.description|slice:":300"}}</h6>
+                        {%endif%}
+                        <b>
+                            {%if b.categories%}
+                            <h6 class="ml-0 mt-3">Category:
+                                {%for c in b.categories%}
+                                {{c}}
+                                {%endfor%}
+                            </h6>
+                            {%endif%}
+                            {%if b.pageCount%}
+                            <h6 class="ml-0 mt-1">Pages: {{b.pageCount}}</h6>
+                            {%endif%}
+                            {%if b.ratingsCount%}
+                            <h6 class="ml-0 mt-1">Rating: {{b.ratingsCount}}</h6>
+                            {%endif%}
+                        </b>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    <br>
+        {%endfor%}
+</section>
+
+{% endblock content %}
