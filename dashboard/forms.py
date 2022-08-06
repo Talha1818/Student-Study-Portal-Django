@@ -29,3 +29,7 @@ class TodoForm(forms.ModelForm):
     class Meta:
         model = Todo
         fields = ['title', 'is_finished']
+
+
+class BooksForm(forms.Form):
+    text = forms.CharField(max_length=200, label='Enter Your Search:')

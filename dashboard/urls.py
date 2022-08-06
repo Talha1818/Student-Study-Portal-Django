@@ -10,10 +10,13 @@ urlpatterns = [
     path('homework', views.homework, name='homework'),
     path('homeworkDelete/<int:pk>', views.homeworkDelete, name='homeworkDelete'),
     path('homeworkUpdate/<int:pk>', views.homeworkUpdate, name='homeworkUpdate'),
+
     path('youtube', views.youtube, name='youtube'),
 
     path('todo', views.todo, name='todo'),
     path('todoUpdate/<int:pk>', views.todoUpdate, name='todoUpdate'),
     path('todoDelete/<int:pk>', views.todoDelete, name='todoDelete'),
+
+    path('books', views.books, name='books'),
 
 ]
